@@ -53,7 +53,7 @@ for i, page in enumerate(pages):
         tracking_number, napomena_text = extract_by_layout_analysis(half)
         print(f"Tracking Number: {tracking_number}")
         print(f"Napomena: {napomena_text}")
-        results.append([i+1, part, tracking_number, napomena_text])
+        results.append([tracking_number, napomena_text])
 
     del image, top_half, bottom_half
     gc.collect()
