@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 from pdf2image import convert_from_path
 import gc
+import csv
 
 
 def extract_by_layout_analysis(image):
@@ -30,11 +31,13 @@ def extract_by_layout_analysis(image):
 
 
 pdf_path = "adrese.pdf" 
+output_csv = "tracking_numbers.csv"
 
-pages = convert_from_path(pdf_path, dpi=150, first_page=1, last_page=5)
+pages = convert_from_path(pdf_path, dpi=150, first_page=1)
+
+results = []
 
 for i, page in enumerate(pages):
-    print(f"Processing page {i+1}...")
 
     image = np.array(page)
     image = cv.cvtColor(image, cv.COLOR_RGB2BGR)
@@ -46,12 +49,18 @@ for i, page in enumerate(pages):
     bottom_half = image[half_height:, :]
 
     for part, half in enumerate([top_half, bottom_half], start=1):
-        print(f"  Processing part {part} of page {i+1}...")
 
-        tracking_number2, napomena_text2 = extract_by_layout_analysis(half)
-        print(f"Tracking Number: {tracking_number2}")
-        print(f"Napomena: {napomena_text2}")
-
+        tracking_number, napomena_text = extract_by_layout_analysis(half)
+        print(f"Tracking Number: {tracking_number}")
+        print(f"Napomena: {napomena_text}")
+        results.append([i+1, part, tracking_number, napomena_text])
 
     del image, top_half, bottom_half
     gc.collect()
+
+with open(output_csv, "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerow(["Tracking Number", "Napomena"])
+    writer.writerows(results)
+
+print(f"Results saved to {output_csv}")
